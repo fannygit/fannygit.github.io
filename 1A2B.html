@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+    </script>
+</head>
+<body>
+    <div class="container border border-2 border-secondary-subtle rounded-1 p-4 my-5" style="width:500px">
+
+        <div class="btn-group d-flex my-3" role="group" aria-label="Default button group">
+            <button onclick="start()" type="button" id="start" class="btn btn-outline-primary">開始</button>
+            <button onclick="again()" type="button" id="again" class="btn btn-outline-primary" disabled="">重來</button>
+            <button onclick="seeAnswer()" type="button" id="seeAnswer" class="btn btn-outline-primary" disabled="">看答案</button>
+        </div>
+
+        <div class="input-group">
+            <span class="input-group-text border-primary text-primary">答案</span>
+            <input type="text" id="input1" class="form-control border-primary " placeholder="請輸入您猜想的4個數字(不可重複)" aria-label="Recipient's username" aria-describedby="send" disabled="">
+            <button onclick="send()" class="btn btn-primary" type="button" id="send" disabled="">送出</button>
+        </div>
+
+        <ul id="history" class="list-group my-3">
+        </ul>
+    </div>
+
+    <script>
+
+        //=====宣告初始值=====
+            let answer = null;        
+        // =====function函式，一開網頁就執行=====
+            window.onload = function()
+            { 
+                //關閉各按鈕與輸入的操作
+                document.getElementById("input1").disabled = true;
+                document.getElementById("again").disabled = true;
+                document.getElementById("seeAnswer").disabled = true;
+                document.getElementById("send").disabled = true;
+            }
+    
+        // =====function函式，亂數=====
+            //以亂數公式，產生4個不重複的數字
+            function generateRandom(){
+                const array = []; //產生空陣列
+                while (array.length < 4)  //建立迴圈，陣列的長度滿4個數字前，一直迴轉
+                {
+                    const randomNum = Math.floor(Math.random() * 10); //套用亂數公式，產生1個亂數(範圍是數字0~9)
+                    if (!array.includes(randomNum)){  //如果此亂數，原本不包括在陣列中
+                        array.push(randomNum); //就將此亂數，推入陣列(目的是排除重複數字)
+                    }
+                }
+                return answer = array.join(''); //迴圈結束時(滿4個數字)，將數字們組裝起來，進行回傳
+            }
+    
+        // =====function函式，判斷猜測數字為幾A幾B=====
+            function judgeAB(num){
+                let a = 0;
+                let b = 0;
+                for(let i = 0; i < 4; i++){
+                    if(num[i] === answer[i]){
+                        a++
+                    }
+                    else if(num.includes(answer[i])){
+                        b++
+                    }
+                }
+                return`${a}A${b}B`
+            }
+    
+        // =====function函式，檢查數字是否有重複=====
+            function repeatNum(num){
+                for (let i = 0; i < 4; i++) { // 有重複數字
+                    for (let j = i+1; j < 4; j++) {
+                        if (num[i] === num[j]) {
+                        return true; 
+                        }   
+                    }
+                }
+                return false; // 無重複數字
+            }
+    
+        // =====事件-開始遊戲=====
+
+            function start(){
+                //產生4位數字的亂數
+                answer = generateRandom()           
+                //啟用各按鈕與輸入的操作&關閉開始遊戲
+                document.getElementById("input1").disabled = false;
+                document.getElementById("again").disabled = false;
+                document.getElementById("seeAnswer").disabled = false;
+                document.getElementById("send").disabled = false;
+                document.getElementById("start").disabled = true;
+                document.getElementById("history").innerHTML ='';
+                };
+    
+        // =====事件-偷看答案=====
+            function seeAnswer(){
+                alert(`答案是：${answer}`);
+            };
+    
+        // =====事件-放棄重來=====
+            function again(){  
+                //跳出原本的答案
+                alert(`這輪的答案是：${answer}\n按下確定後，遊戲將重新開始~`);
+                //重新產生亂數
+                answer = generateRandom()   
+                document.getElementById("history").innerHTML ='';
+                };
+    
+        // =====事件-送出=====
+            function send(){           
+                //輸入的數字為猜測數字
+                const guess = document.getElementById("input1").value;
+                
+                //如果輸入不是數字、輸入不是4個或輸入重複數字，跳視窗提醒
+                if (isNaN(guess) || guess.length !== 4 || repeatNum(guess)) {   
+                    alert('請輸入不重複的4個數字唷!');
+                    document.getElementById("input1").value = '';
+                    return;
+                }
+    
+                //建立歷程區的li，並設定class
+                const historyItem = document.createElement('li');
+                historyItem.className = 'list-group-item border-primary p-2';
+    
+                //列出判斷完畢的結果
+                const judgeResult = judgeAB(guess);
+    
+                //如果猜中，幾A幾B底色為綠色，關閉各按鈕與輸入的操作&啟用開始遊戲
+                if (judgeResult === '4A0B') {
+                    historyItem.innerHTML = `<span class="float-right text-bg-primary p-1 rounded-1">${judgeResult}</span>\t${guess}\t<span class="text-danger">猜對了!!</span>`;
+                    document.getElementById("input1").disabled = true;
+                    document.getElementById("again").disabled = true;
+                    document.getElementById("seeAnswer").disabled = true;
+                    document.getElementById("send").disabled = true;
+                    document.getElementById("start").disabled = false;                
+                } 
+                //如果猜錯，幾A幾B底色為紅色
+                else {   
+                    historyItem.innerHTML = `<span class="float-right text-bg-danger p-1 rounded-1">${judgeResult}</span>\t${guess}`;
+                }
+                
+                // 將項目插入歷程區
+                document.getElementById("history").appendChild(historyItem);
+    
+                // 清空輸入框
+                document.getElementById("input1").value = '';
+        };
+        </script>
+</body>
+</html>
